@@ -1,0 +1,15 @@
+<!-- 이 페이지 아님 -->
+<!-- 이 페이지 아님 -->
+<!-- 이 페이지 아님 -->
+<!-- 이 페이지 아님 -->
+현재시간: <%= @curTime %>
+<br>
+요일: <%= @curTime.wday %>
+<br>
+시  : <%= @curTimeHour %>
+<br>
+<% @empty_room.each do |r| %>
+    <%= r.roomnumber %>
+<br>
+<% end %>
+<%= @messages %>

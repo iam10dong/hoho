@@ -1,0 +1,9 @@
+
+<% @roominfo.each do |r| %>
+    <% if r.isempty==1 then %>
+        <%= r.roomnumber %> - <%= r.timevalue %> - <%= r.weekday %> - <%= r.bulidingname %> - <%= r.isempty %> <%= "비었음" %>
+    <% else %>
+        <%= r.roomnumber %> - <%= r.timevalue %> - <%= r.weekday %> - <%= r.bulidingname %> - <%= r.isempty %>
+    <% end if %>
+<br>
+<% end %>

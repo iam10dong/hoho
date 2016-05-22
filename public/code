@@ -1,0 +1,62 @@
+  def telegramcall
+    token = '212232596:AAE7B9INzr9htlgtRPKyyCSxswg02XcC3v8'
+    @building_name = params[:building_name]
+    @chat_id = params[:chat_id]
+    #@chat_id = 192787372
+    #@messages = "테스트메세지의 시작입니다>>"
+    @messages = @messages.to_s + " \n" + @building_name.to_s
+    
+    # 이곳 윗 부분은 건들지 말것. 
+    # [변수]@building_name: 강의실 이름
+    # [변수]@chat_id: 메세지 보낸(받을) 사람의 chatid
+    # [변수]@messages: 텔레그램으로 보낼 메세지
+    # 위 설명된 변수와 필요한 변수를 추가로 생성하여 기능 구현할 것
+    # 1. 현재시간 받아오기
+    # 2. 현재시간에 따른 현재 비어있는 강의실 찾기
+    # 3. 2에서 찾은 강의실이 언제까지 비어있는지 알아내기
+
+    #1. 현재시간 받아오기
+    
+    @curTime = DateTime.now + 9.hours
+    @curTimeHour = @curTime.hour
+    @curTimeWeekday = @curTime.wday
+    
+    @curTimeHour = @curTimeHour*100
+    if( @curTime.minute > 30)
+      @curTimeHour = @curTimeHour + 50
+    end
+    
+    #2. 현재시간에 따른 현재 비어있는 강의실 찾기
+    #DB구조: Roominfo.create(roomnumber: r.roomnumber, bulidingname: bd, weekday: weekvalue, timevalue: timevalue, isempty: 1)
+    #http://api.rubyonrails.org/classes/ActiveRecord/QueryMethods.html#method-i-where
+    #http://guides.rubyonrails.org/active_record_querying.html
+    #@empty_room = Roominfo.where(["bulidingname = ? and weekday = ? and timevalue = ? and isempty=1", @building_name, @curTimeWeekday, @curTimeHour+100])
+    @empty_room = Roominfo.where(["bulidingname = ? and weekday = ? and timevalue = ? and isempty=1", @building_name, @curTimeWeekday, @curTimeHour]).select("roomnumber")
+
+
+    # 3. 2에서 찾은 강의실이 언제까지 비어있는지 알아내기
+    @messages = @messages.to_s + "에서 " + @curTime.hour.to_s + "시" + @curTime.minute.to_s + "분 현재 사용가능한 강의실입니다.\n"
+    @empty_room.each do |r|
+      roominfo = Roominfo.where(["roomnumber = ? and timevalue >= ? and weekday = ?", r.roomnumber, @curTimeHour, @curTimeWeekday]).select("timevalue, isempty")
+      finalEmptyTime = @curTimeHour
+      roominfo.each do |r2|
+        if r2.isempty == 0
+          break;
+        end
+        finalEmptyTime = r2.timevalue
+      end
+      
+      finalEmptyTimeHangul = ""
+      if finalEmptyTime%100 == 0
+        finalEmptyTimeHangul = (finalEmptyTime/100).to_s + "시 30분"
+      else
+        finalEmptyTimeHangul = (finalEmptyTime/100+1).to_s + "시 00분"
+      end
+      @messages = @messages + r.roomnumber.to_s + " >> " + finalEmptyTimeHangul + "까지 사용가능\n"
+    end
+      
+    #아래 두줄은 건들지 말 것, 텔레그램으로 메세지 보내는 부분임
+    Telegram::Bot::Client.run(token) do |bot|
+        bot.api.send_message(chat_id: @chat_id, text: @messages)
+    end
+  end

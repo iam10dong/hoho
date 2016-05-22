@@ -1,0 +1,59 @@
+<div class="container" style="margin-top:50px">
+    <form action="/home/table" metdod="get" class="form-horizontal">
+        <div class="form-group">
+            <label for="inputroomnumber" class="col-sm-2 control-label">강의실</label>
+            <div class="col-sm-4">
+                <input class="form-control" type="text" name="roomnumber" placeholder="강의실번호 입력" value="<%= @roomnumber %>">
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+              <input class="btn btn-default" type="submit" value="검색">
+            </div>
+        </div>
+    </form>
+</div>
+
+<div class="container" style="margin-top:50px">    
+<% if @roominfo != nil %>
+    <% if @roominfo.length != 0 %>
+        <table class="table table-bordered table-condensed" style="text-align:center;">
+            <tr class="active">
+                <td style="width:25%">(공백)</td>
+                <td style="width:15%">월</td>
+                <td style="width:15%">화</td>
+                <td style="width:15%">수</td>
+                <td style="width:15%">목</td>
+                <td style="width:15%">금</td>
+            </tr>
+            <!-- 참고: http://stackoverflow.com/questions/4346335/ruby-how-to-iterate-over-a-range-but-in-set-increments -->
+            <% 900.step(2150,50) do |ts| %>
+                <tr>
+                    <!-- 검색어: rails formatting numbers fill 0-->
+                    <!-- 이해가 안가면 제껴도 좋은 부분 -->
+                    <td class="active"><%= "%.2i"%(ts/100) %>시
+                        <% if ts%100 == 0 %>
+                            00분 ~ <%= "%.2i"%(ts/100) %>시 30분
+                        <% else %>
+                            30분 ~ <%= "%.2i"%(ts/100+1) %>시 00분
+                        <% end %>
+                    </td>
+                    <!-- 이해가 안가면 제껴도 좋은 부분 끝 -->
+                    <% 1.step(5,1) do |wd| %>
+                            <% if @roominfo.where(weekday: wd, timevalue: ts).first.isempty == 1 %>
+                                <td class="info">사용가능</td>
+                            <% else %>
+                                <td class="danger">사용불가</td>
+                            <% end %>
+                    <% end %>
+                </tr>
+            <% end %>
+        </table>
+    <% else %>
+        <%= "검색결과가 없습니다. " %>
+    <% end %>
+<% else %>
+    <%= "검색어를 입력해 주세요." %>
+<% end %>
+
+</div>
